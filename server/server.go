@@ -72,7 +72,22 @@ func (s *Server) GetSelfPeer() *Peer {
 }
 
 func (s *Server) GetWithoutSelfPeer() []Peer {
-	return nil
+	var peers = make([]Peer, 0)
+	for f := s.peerset.list.Front(); f.Value != nil; f.Next() {
+		if f.Value.(Peer).address == s.peerset.self.address {
+			continue
+		}
+		peers = append(peers, f.Value.(Peer))
+	}
+
+	return peers
+}
+
+func (s *Server) SetPeerSet(peers []Peer, self *Peer) {
+	for peer := range peers {
+		s.peerset.list.PushBack(peer)
+	}
+	s.peerset.self = self
 }
 
 func (s *Server) electionScheduler(ticker *time.Ticker) {
@@ -193,6 +208,12 @@ func (s *Server) HandleGetTimeZoneRequest(req *request.Request) *request.Respons
 	defer lock.Unlock()
 	response := &request.Response{time.Now().Nanosecond() + rand.Intn(10000), nil}
 	return response
+}
+
+func (s *Server) GetTimeZone() time.Time {
+	req := &request.Request{request.G_TIMESTAMP, nil, nil}
+	response := s.rpcclient.Send(req)
+	return response.Data.(time.Time)
 }
 
 func (s *Server) HandleAddPeerRequest(req *request.Request) *request.Response {

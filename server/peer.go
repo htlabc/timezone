@@ -19,9 +19,7 @@ type Peer struct {
 	address string
 }
 
-func AddPeer() {
-
-}
-
-func RemovePeer() {
+func (p *Peer) Address(val string) *Peer {
+	p.address = val
+	return p
 }
