@@ -2,16 +2,20 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"htl.com/channelpool"
 	"htl.com/request"
 	"htl.com/rpc/rpcclient"
 	"htl.com/rpc/rpcserver"
 	"htl.com/util"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 )
 
 var INSTANCE *Server
@@ -47,11 +51,21 @@ func newServer() *Server {
 	return &Server{}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() error {
+	serverid := consensus.Hash(s.GetSelfPeer().address)
+	s.serverid = string(serverid)
+	term, err := s.Read(consensus.DataPath + s.serverid)
+	if err != nil {
+		return err
+	}
+	d, _ := strconv.Atoi(string(term))
+	num := (*int64)(unsafe.Pointer(&d))
+	s.term = *num
 	rpcserver := &rpcserver.RpcServer{}
 	go rpcserver.Start()
 	go s.electionScheduler(time.NewTicker(5 * time.Second))
 	go s.heartbeat(time.NewTicker(5 * time.Second))
+	return nil
 }
 
 type Server struct {
@@ -68,7 +82,7 @@ type Server struct {
 }
 
 func (s *Server) GetSelfPeer() *Peer {
-	return nil
+	return s.peerset.self
 }
 
 func (s *Server) GetWithoutSelfPeer() []Peer {
@@ -117,7 +131,7 @@ func (s *Server) electionScheduler(ticker *time.Ticker) {
 					if response.Term > s.term {
 						s.term = response.Term
 						//把term写入文件保存防止异常宕机之后信息丢失
-						consensus.Write([]byte(s.serverid + "-" + strconv.FormatInt(s.term, 10)))
+						s.Write([]byte(s.serverid + "-" + strconv.FormatInt(s.term, 10)))
 						s.status = FLLOWER
 						s.leaderid = response.Serverid
 						return
@@ -168,7 +182,7 @@ func (s *Server) HandleHeartBeatRequest(req *request.Request) *request.Response 
 		s.leaderid = s.leaderid
 		s.status = FLLOWER
 		s.term = req.OBJ.(int64)
-		consensus.Write([]byte(s.serverid + "-" + strconv.FormatInt(s.term, 10)))
+		s.Write([]byte(s.serverid + "-" + strconv.FormatInt(s.term, 10)))
 	}
 	response := &request.Response{}
 	response.Data = &request.HeartbeatResponse{s.serverid, s.term, time.Now()}
@@ -238,4 +252,22 @@ func (s *Server) Redirect(request *request.Request) *request.Response {
 	request.URL = s.peerset.leader.address
 	res := s.rpcclient.Send(request)
 	return res
+}
+
+func (s *Server) Write(data []byte) {
+	file, err := os.Create(consensus.DataPath + s.serverid)
+	defer file.Close()
+	if err != nil {
+		fmt.Printf("os.create file err %v", err)
+		return
+	}
+	file.Write(data)
+}
+
+func (s *Server) Read(filename string) ([]byte, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, nil
+	}
+	return data, nil
 }
