@@ -23,3 +23,7 @@ func (p *Peer) Address(val string) *Peer {
 	p.address = val
 	return p
 }
+
+func (p *Peer) GetAddress() string {
+	return p.address
+}

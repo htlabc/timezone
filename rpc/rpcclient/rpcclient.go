@@ -3,13 +3,12 @@ package rpcclient
 import (
 	"fmt"
 	"htl.com/request"
-	"htl.com/server"
 	"log"
 	"net/rpc"
 )
 
 type rpcclient interface {
-	Send(peer *server.Peer)
+	Send(req *request.Request) *request.Response
 }
 
 type RpcClient struct {

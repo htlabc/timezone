@@ -1,12 +1,12 @@
 package server
 
 import (
+	"container/list"
 	"context"
 	"fmt"
 	"htl.com/channelpool"
 	"htl.com/request"
 	"htl.com/rpc/rpcclient"
-	"htl.com/rpc/rpcserver"
 	"htl.com/util"
 	"io/ioutil"
 	"math/rand"
@@ -31,41 +31,17 @@ type server interface {
 	Stop()
 }
 
-type service interface {
+type Service interface {
 	HandleGetTimeZoneRequest(request *request.Request) *request.Response
 	HandleAddPeerRequest(request *request.Request) *request.Response
 	HandleRemovePeerRequest(request *request.Request) *request.Response
 	HandleElectionRequest(request *request.Request) *request.Response
 	Redirect(request *request.Request) *request.Response
+	HandleHeartBeatRequest(req *request.Request) *request.Response
 }
 
-func GETINSTANCE() *Server {
-	if INSTANCE != nil {
-		return INSTANCE
-	} else {
-		return newServer()
-	}
-}
-
-func newServer() *Server {
-	return &Server{}
-}
-
-func (s *Server) Start() error {
-	serverid := consensus.Hash(s.GetSelfPeer().address)
-	s.serverid = string(serverid)
-	term, err := s.Read(consensus.DataPath + s.serverid)
-	if err != nil {
-		return err
-	}
-	d, _ := strconv.Atoi(string(term))
-	num := (*int64)(unsafe.Pointer(&d))
-	s.term = *num
-	rpcserver := &rpcserver.RpcServer{}
-	go rpcserver.Start()
-	go s.electionScheduler(time.NewTicker(5 * time.Second))
-	go s.heartbeat(time.NewTicker(5 * time.Second))
-	return nil
+//server参数
+type Option struct {
 }
 
 type Server struct {
@@ -81,13 +57,44 @@ type Server struct {
 	heartbeatperiod int
 }
 
+func NewServer() *Server {
+	return &Server{rpcclient: &rpcclient.RpcClient{}}
+}
+
+func GETINSTANCE() *Server {
+	if INSTANCE != nil {
+		return INSTANCE
+	} else {
+		return NewServer()
+	}
+}
+
+func (s *Server) Start(stopch chan struct{}) error {
+	serverid := consensus.Hash(s.GetSelfPeer().address)
+	s.serverid = string(serverid)
+	term, err := s.Read(consensus.DataPath + s.serverid)
+	if err != nil {
+		return err
+	}
+	d, _ := strconv.Atoi(string(term))
+	num := (*int64)(unsafe.Pointer(&d))
+	s.term = *num
+	go s.electionScheduler(time.NewTicker(5 * time.Second))
+	go s.heartbeat(time.NewTicker(5 * time.Second))
+	return nil
+}
+
+func (s *Server) GetService() *Server {
+	return s
+}
+
 func (s *Server) GetSelfPeer() *Peer {
 	return s.peerset.self
 }
 
 func (s *Server) GetWithoutSelfPeer() []Peer {
 	var peers = make([]Peer, 0)
-	for f := s.peerset.list.Front(); f.Value != nil; f.Next() {
+	for f := s.peerset.list.Front(); f != nil; f.Next() {
 		if f.Value.(Peer).address == s.peerset.self.address {
 			continue
 		}
@@ -98,6 +105,7 @@ func (s *Server) GetWithoutSelfPeer() []Peer {
 }
 
 func (s *Server) SetPeerSet(peers []Peer, self *Peer) {
+	s.peerset.list = list.New()
 	for peer := range peers {
 		s.peerset.list.PushBack(peer)
 	}
@@ -115,14 +123,14 @@ func (s *Server) electionScheduler(ticker *time.Ticker) {
 				s.term += 1
 				var tickets int32 = 0
 				callables := make([]*channelpool.Callable, 0)
-				for f := s.peerset.list.Front(); f.Value != nil; f.Next() {
+				for f := s.peerset.list.Front(); f != nil; f = f.Next() {
 					callables = append(callables, channelpool.NewCallable(
-						func() interface{} {
-							p := f.Value.(Peer)
+						func(args interface{}) interface{} {
+							p := args.(Peer)
 							votereq := &request.VoteRequest{s.serverid, s.term}
 							req := &request.Request{CMD: request.V_ELECTION, URL: p.address, OBJ: votereq}
 							return s.rpcclient.Send(req)
-						}, context.Background(), 5*time.Second,
+						}, f.Value.(Peer), context.Background(), 5*time.Second,
 					))
 				}
 				channelpool.Instance.RunSync(callables)
@@ -159,19 +167,19 @@ func (s *Server) heartbeat(ticker *time.Ticker) {
 	case <-ticker.C:
 		go func() {
 			callables := make([]*channelpool.Callable, 0)
-			for f := s.peerset.list.Front(); f.Value != nil; f.Next() {
+			for f := s.peerset.list.Front(); f != nil; f = f.Next() {
 				callables = append(callables, channelpool.NewCallable(
-					func() interface{} {
-						req := &request.Request{CMD: request.HEARTBEAT, OBJ: s.term, URL: f.Value.(Peer).address}
+					func(args interface{}) interface{} {
+						req := &request.Request{CMD: request.HEARTBEAT, OBJ: s.term, URL: args.(Peer).address}
 						response := s.rpcclient.Send(req)
 						if response.Data.(request.HeartbeatResponse).Serverid == s.leaderid {
 							s.pretimestamp = response.Data.(request.HeartbeatResponse).Data.(time.Time)
 						}
 						return response
-					}, context.Background(), 5*time.Second))
+					}, f, context.Background(), 5*time.Second))
 
 			}
-			channelpool.Instance.RunASync(callables)
+			channelpool.GetInstace().RunASync(callables)
 		}()
 	}
 
@@ -225,8 +233,11 @@ func (s *Server) HandleGetTimeZoneRequest(req *request.Request) *request.Respons
 }
 
 func (s *Server) GetTimeZone() time.Time {
-	req := &request.Request{request.G_TIMESTAMP, nil, nil}
-	response := s.rpcclient.Send(req)
+	req := &request.Request{request.G_TIMESTAMP, nil, ""}
+	var response *request.Response
+	if s.serverid != s.leaderid {
+		response = s.Redirect(req)
+	}
 	return response.Data.(time.Time)
 }
 
@@ -239,7 +250,7 @@ func (s *Server) HandleAddPeerRequest(req *request.Request) *request.Response {
 }
 
 func (s *Server) HandleRemovePeerRequest(req *request.Request) *request.Response {
-	for f := s.peerset.list.Front(); f.Value != nil; f.Next() {
+	for f := s.peerset.list.Front(); f != nil; f = f.Next() {
 		if f.Value.(Peer).address == req.OBJ.(Peer).address {
 			s.peerset.list.Remove(f)
 			return &request.Response{request.OK, nil}

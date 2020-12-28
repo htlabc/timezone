@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="511d6bea-942e-465f-b207-0ae0fedb430f" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/channelpool/channelpool.go" beforeDir="false" afterPath="$PROJECT_DIR$/channelpool/channelpool.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rpc/rpcclient/rpcclient.go" beforeDir="false" afterPath="$PROJECT_DIR$/rpc/rpcclient/rpcclient.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rpc/rpcserver/rpcserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/rpc/rpcserver/rpcserver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/peer.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/peer.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="D:\sofeware\go1.15.windows-amd64\go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="ProjectId" id="1m96KaVF53x5B3scoLCjg2ANtWh" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="go.vendoring.notification.had.been.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RunManager">
+    <configuration name="go build htl.com" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="timezone" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <package value="htl.com" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build htl.com" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="timezone server" />
+    <MESSAGE value="新添加了peer 的方法" />
+    <MESSAGE value="添加hash函数" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加hash函数" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="245" y="0" key="CommitChangelistDialog2" timestamp="1608980185720">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state x="245" y="0" key="CommitChangelistDialog2/0.0.1280.760@0.0.1280.760" timestamp="1608980185720" />
+    <state width="611" height="466" key="DebuggerActiveHint" timestamp="1609149862334">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="611" height="466" key="DebuggerActiveHint/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609149862334" />
+    <state width="446" height="466" key="DebuggerActiveHint/0.0.1280.760@0.0.1280.760" timestamp="1609119366161" />
+    <state width="1238" height="286" key="GridCell.Tab.0.bottom" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.0.bottom/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.0.bottom/0.0.1280.760@0.0.1280.760" timestamp="1609119877042" />
+    <state width="1238" height="286" key="GridCell.Tab.0.center" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.0.center/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.0.center/0.0.1280.760@0.0.1280.760" timestamp="1609119877042" />
+    <state width="1238" height="286" key="GridCell.Tab.0.left" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.0.left/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.0.left/0.0.1280.760@0.0.1280.760" timestamp="1609119877041" />
+    <state width="1238" height="286" key="GridCell.Tab.0.right" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.0.right/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.0.right/0.0.1280.760@0.0.1280.760" timestamp="1609119877042" />
+    <state width="1238" height="286" key="GridCell.Tab.1.bottom" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.1.bottom/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.1.bottom/0.0.1280.760@0.0.1280.760" timestamp="1609119877492" />
+    <state width="1238" height="286" key="GridCell.Tab.1.center" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.1.center/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.1.center/0.0.1280.760@0.0.1280.760" timestamp="1609119877492" />
+    <state width="1238" height="286" key="GridCell.Tab.1.left" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.1.left/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.1.left/0.0.1280.760@0.0.1280.760" timestamp="1609119877492" />
+    <state width="1238" height="286" key="GridCell.Tab.1.right" timestamp="1609150097812">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state width="1238" height="286" key="GridCell.Tab.1.right/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609150097812" />
+    <state width="1238" height="286" key="GridCell.Tab.1.right/0.0.1280.760@0.0.1280.760" timestamp="1609119877492" />
+    <state x="233" y="113" key="Vcs.Push.Dialog.v2" timestamp="1608980189979">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state x="233" y="113" key="Vcs.Push.Dialog.v2/0.0.1280.760@0.0.1280.760" timestamp="1608980189979" />
+    <state x="393" y="124" width="596" height="536" key="find.popup" timestamp="1609149554687">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state x="393" y="124" width="596" height="536" key="find.popup/0.0.1280.760/2560.0.1920.1040@0.0.1280.760" timestamp="1609149554687" />
+    <state x="393" y="124" width="596" height="536" key="find.popup/0.0.1280.760@0.0.1280.760" timestamp="1609072194466" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/rpc/rpcclient/rpcclient.go</url>
+          <line>18</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channelpool/channelpool.go</url>
+          <line>69</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channelpool/channelpool.go</url>
+          <line>78</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channelpool/channelpool.go</url>
+          <line>100</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channelpool/channelpool.go</url>
+          <line>103</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channelpool/channelpool.go</url>
+          <line>89</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/server/server.go</url>
+          <line>125</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/server/server.go</url>
+          <line>172</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="GoApplicationRunConfiguration">
+        <watch expression="s.peerset.list.Front()" language="go" />
+        <watch expression="s.peerset.list.Front()" language="go" />
+      </configuration>
+    </watches-manager>
+  </component>
+</project>

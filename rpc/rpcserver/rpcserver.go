@@ -9,19 +9,28 @@ import (
 	"os"
 )
 
-type rpcserver interface {
+type RpcServer interface {
 	Start()
 	HandleClientRequest(request *req.Request, response *req.Response)
 	Stop()
 }
 
-type RpcServer struct {
+func NewRpcServer() *rpcserver {
+	return &rpcserver{}
 }
 
-func (r *RpcServer) Start() {
-	go func() {
+type Service interface {
+	GetService() *server.Server
+}
+
+type rpcserver struct {
+	Service
+}
+
+func (r *rpcserver) Start(address string, stopch chan struct{}) {
+	func() {
 		rpc.Register(r)
-		tcpAddr, err := net.ResolveTCPAddr("tcp", ":1234")
+		tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 		if err != nil {
 			fmt.Println("Fatal error:", err)
 			os.Exit(1)
@@ -37,22 +46,22 @@ func (r *RpcServer) Start() {
 	}()
 }
 
-func (r *RpcServer) Stop() {
+func (r *rpcserver) Stop() {
 
 }
 
-func (r *RpcServer) HandleClientRequest(request *req.Request, response *req.Response) {
-	server := server.GETINSTANCE()
+func (r *rpcserver) HandleClientRequest(request *req.Request, response *req.Response) {
+	ser := r.Service.GetService()
 	switch request.CMD {
 	case req.V_ELECTION:
-		response = server.HandleElectionRequest(request)
+		response = ser.HandleElectionRequest(request)
 	case req.G_TIMESTAMP:
-		response = server.HandleGetTimeZoneRequest(request)
+		response = ser.HandleGetTimeZoneRequest(request)
 	case req.A_PEER:
-		response = server.HandleAddPeerRequest(request)
+		response = ser.HandleAddPeerRequest(request)
 	case req.R_PEER:
-		response = server.HandleRemovePeerRequest(request)
+		response = ser.HandleRemovePeerRequest(request)
 	case req.HEARTBEAT:
-		response = server.HandleHeartBeatRequest(request)
+		response = ser.HandleHeartBeatRequest(request)
 	}
 }

@@ -18,14 +18,15 @@ type Result struct {
 
 type Callable struct {
 	id     int64
-	fun    func() interface{}
+	args   interface{}
+	fun    func(interface{}) interface{}
 	ctx    context.Context
 	period time.Duration
 	result *Result
 }
 
-func NewCallable(fun func() interface{}, ctx context.Context, period time.Duration) *Callable {
-	return &Callable{fun: fun, ctx: ctx, period: period}
+func NewCallable(fun func(args interface{}) interface{}, args interface{}, ctx context.Context, period time.Duration) *Callable {
+	return &Callable{fun: fun, ctx: ctx, period: period, args: args}
 }
 
 func getCallableId() int64 {
@@ -86,7 +87,7 @@ func (c *ChannelPool) RunSync(calls []*Callable) []interface{} {
 	for _, call := range calls {
 		wg.Add(1)
 		go func() {
-			result := call.fun()
+			result := call.fun(call.args)
 			results = append(results, result)
 			wg.Done()
 		}()
@@ -109,7 +110,7 @@ func (c *Callable) execute() {
 	ctx, _ := context.WithTimeout(c.ctx, c.period)
 	var res interface{}
 	func() {
-		res = c.fun()
+		res = c.fun(c.args)
 		switch res.(type) {
 		case error:
 			c.result.err = errors.New(res.(string))
