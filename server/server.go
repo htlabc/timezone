@@ -3,14 +3,15 @@ package server
 import (
 	"container/list"
 	"context"
+	"encoding/json"
 	"fmt"
 	"htl.com/channelpool"
 	"htl.com/request"
 	"htl.com/rpc/rpcclient"
 	"htl.com/util"
 	"io/ioutil"
-	"math/rand"
 	"os"
+	"reflect"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -106,8 +107,8 @@ func (s *Server) GetWithoutSelfPeer() []Peer {
 
 func (s *Server) SetPeerSet(peers []Peer, self *Peer) {
 	s.peerset.list = list.New()
-	for peer := range peers {
-		s.peerset.list.PushBack(peer)
+	for _, peer := range peers {
+		s.peerset.list.PushFront(peer)
 	}
 	s.peerset.self = self
 }
@@ -170,7 +171,13 @@ func (s *Server) heartbeat(ticker *time.Ticker) {
 			for f := s.peerset.list.Front(); f != nil; f = f.Next() {
 				callables = append(callables, channelpool.NewCallable(
 					func(args interface{}) interface{} {
-						req := &request.Request{CMD: request.HEARTBEAT, OBJ: s.term, URL: args.(Peer).address}
+						switch args.(type) {
+						case *list.Element:
+							fmt.Println("args value: ", reflect.TypeOf(args))
+						default:
+							return request.Response{}
+						}
+						req := &request.Request{CMD: request.HEARTBEAT, OBJ: s.term, URL: args.(*list.Element).Value.(Peer).address}
 						response := s.rpcclient.Send(req)
 						if response.Data.(request.HeartbeatResponse).Serverid == s.leaderid {
 							s.pretimestamp = response.Data.(request.HeartbeatResponse).Data.(time.Time)
@@ -185,19 +192,18 @@ func (s *Server) heartbeat(ticker *time.Ticker) {
 
 }
 
-func (s *Server) HandleHeartBeatRequest(req *request.Request) *request.Response {
+func (s *Server) HandleHeartBeatRequest(req *request.Request, response *request.Response) {
 	if s.term > req.OBJ.(int64) {
 		s.leaderid = s.leaderid
 		s.status = FLLOWER
 		s.term = req.OBJ.(int64)
 		s.Write([]byte(s.serverid + "-" + strconv.FormatInt(s.term, 10)))
 	}
-	response := &request.Response{}
-	response.Data = &request.HeartbeatResponse{s.serverid, s.term, time.Now()}
-	return response
+	jsdata, _ := json.Marshal(request.HeartbeatResponse{s.serverid, s.term, time.Now()})
+	response.Data = jsdata
 }
 
-func (s *Server) HandleElectionRequest(req *request.Request) *request.Response {
+func (s *Server) HandleElectionRequest(req *request.Request, response *request.Response) {
 	var votelock sync.Mutex
 	votelock.Lock()
 	defer votelock.Unlock()
@@ -210,59 +216,70 @@ func (s *Server) HandleElectionRequest(req *request.Request) *request.Response {
 		s.term = voterequest.Term
 		s.status = FLLOWER
 		if peer != nil {
-			return &request.Response{vreq, nil}
+			data, _ := json.Marshal(vreq)
+			response.Data = data
+			response.Err = nil
+			return
 		}
 	} else {
 		vreq.Data = request.FAILED
-		return &request.Response{vreq, nil}
+		data, _ := json.Marshal(vreq)
+		response.Data = data
+		response.Err = nil
+		return
 	}
-	return nil
+
 }
 
 //处理timezone请求
-func (s *Server) HandleGetTimeZoneRequest(req *request.Request) *request.Response {
+func (s *Server) HandleGetTimeZoneRequest(req *request.Request, response *request.Response) {
 	//如果不是leader 则转发给leader 执行请求
 	if s.leaderid != s.serverid {
-		return s.Redirect(req)
+		s.Redirect(req, response)
+		return
 	}
 	var lock sync.Mutex
 	lock.Lock()
 	defer lock.Unlock()
-	response := &request.Response{time.Now().Nanosecond() + rand.Intn(10000), nil}
-	return response
+	response.Data = time.Now().Nanosecond()
+	response.Err = nil
 }
 
 func (s *Server) GetTimeZone() time.Time {
 	req := &request.Request{request.G_TIMESTAMP, nil, ""}
 	var response *request.Response
 	if s.serverid != s.leaderid {
-		response = s.Redirect(req)
+		s.Redirect(req, response)
 	}
 	return response.Data.(time.Time)
 }
 
-func (s *Server) HandleAddPeerRequest(req *request.Request) *request.Response {
+func (s *Server) HandleAddPeerRequest(req *request.Request, response *request.Response) {
 	var lock sync.Mutex
 	lock.Lock()
 	defer lock.Unlock()
 	s.peerset.list.PushBack(req.OBJ.(Peer))
-	return &request.Response{request.OK, nil}
+	response.Data = request.OK
+	response.Err = nil
 }
 
-func (s *Server) HandleRemovePeerRequest(req *request.Request) *request.Response {
+func (s *Server) HandleRemovePeerRequest(req *request.Request, response *request.Response) {
 	for f := s.peerset.list.Front(); f != nil; f = f.Next() {
 		if f.Value.(Peer).address == req.OBJ.(Peer).address {
 			s.peerset.list.Remove(f)
-			return &request.Response{request.OK, nil}
+			response.Data = request.OK
+			response.Err = nil
+			return
 		}
 	}
-	return &request.Response{request.FAILED, nil}
+
+	response.Data = request.FAILED
+	response.Err = nil
 }
 
-func (s *Server) Redirect(request *request.Request) *request.Response {
+func (s *Server) Redirect(request *request.Request, response *request.Response) {
 	request.URL = s.peerset.leader.address
-	res := s.rpcclient.Send(request)
-	return res
+	response = s.rpcclient.Send(request)
 }
 
 func (s *Server) Write(data []byte) {

@@ -19,6 +19,10 @@ type Peer struct {
 	address string
 }
 
+func NewPeer() *Peer {
+	return &Peer{}
+}
+
 func (p *Peer) Address(val string) *Peer {
 	p.address = val
 	return p

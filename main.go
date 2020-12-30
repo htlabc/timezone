@@ -21,9 +21,9 @@ func Main() {
 	peers := make([]server.Peer, 0)
 	peers = append(peers, *p1)
 	s.SetPeerSet(peers, p1)
-	rpcserver := rpcserver.NewRpcServer()
-	rpcserver.Service = s
-	go rpcserver.Start(p1.GetAddress(), stopch)
+	server := rpcserver.NewRpcServer()
+	//server.Service = s
+	go rpcserver.Start(server, p1.GetAddress(), stopch)
 	go s.Start(stopch)
 	//fmt.Println(s.GetTimeZone())
 	ch := make(chan os.Signal, 1)

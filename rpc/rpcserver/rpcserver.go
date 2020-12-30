@@ -9,59 +9,89 @@ import (
 	"os"
 )
 
-type RpcServer interface {
+type rpcServer interface {
 	Start()
 	HandleClientRequest(request *req.Request, response *req.Response)
 	Stop()
 }
 
-func NewRpcServer() *rpcserver {
-	return &rpcserver{}
+func NewRpcServer() *RpcServer {
+	return &RpcServer{}
 }
 
-type Service interface {
-	GetService() *server.Server
+//type Service interface {
+//	GetService() *server.Server
+//}
+
+type RpcServer struct {
+	//Service
 }
 
-type rpcserver struct {
-	Service
-}
+//func Start(r *RpcServer, address string, stopch chan struct{}) {
+//		rpc.Register(r)
+//		//addr:=strings.Split(address,":")[1]
+//		tcpAddr, err := net.ResolveTCPAddr("tcp", ":5001")
+//		if err != nil {
+//			fmt.Println("Fatal error:", err)
+//			os.Exit(1)
+//		}
+//		listener, err := net.ListenTCP("tcp", tcpAddr)
+//		if err != nil {
+//			fmt.Println("Fatal error:", err)
+//			os.Exit(1)
+//		}
+//
+//		for {
+//			conn, err := listener.Accept()
+//			if err != nil {
+//				continue
+//			}
+//			rpc.ServeConn(conn)
+//		}
+//}
 
-func (r *rpcserver) Start(address string, stopch chan struct{}) {
-	func() {
-		rpc.Register(r)
-		tcpAddr, err := net.ResolveTCPAddr("tcp", address)
+func Start(r *RpcServer, address string, stopch chan struct{}) {
+
+	rpc.Register(r)
+
+	tcpAddr, err := net.ResolveTCPAddr("tcp", ":1234")
+	if err != nil {
+		fmt.Println("Fatal error:", err)
+		os.Exit(1)
+	}
+
+	listener, err := net.ListenTCP("tcp", tcpAddr)
+	if err != nil {
+		fmt.Println("Fatal error:", err)
+		os.Exit(1)
+	}
+
+	for {
+		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Fatal error:", err)
-			os.Exit(1)
+			continue
 		}
-		listener, err := net.ListenTCP("tcp", tcpAddr)
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				continue
-			}
-			rpc.ServeConn(conn)
-		}
-	}()
+		rpc.ServeConn(conn)
+	}
 }
 
-func (r *rpcserver) Stop() {
+func Stop(r *RpcServer) {
 
 }
 
-func (r *rpcserver) HandleClientRequest(request *req.Request, response *req.Response) {
-	ser := r.Service.GetService()
+func (r *RpcServer) HandleClientRequest(request *req.Request, response *req.Response) error {
+	ser := server.GETINSTANCE()
 	switch request.CMD {
 	case req.V_ELECTION:
-		response = ser.HandleElectionRequest(request)
+		ser.HandleElectionRequest(request, response)
 	case req.G_TIMESTAMP:
-		response = ser.HandleGetTimeZoneRequest(request)
+		ser.HandleGetTimeZoneRequest(request, response)
 	case req.A_PEER:
-		response = ser.HandleAddPeerRequest(request)
+		ser.HandleAddPeerRequest(request, response)
 	case req.R_PEER:
-		response = ser.HandleRemovePeerRequest(request)
+		ser.HandleRemovePeerRequest(request, response)
 	case req.HEARTBEAT:
-		response = ser.HandleHeartBeatRequest(request)
+		ser.HandleHeartBeatRequest(request, response)
 	}
+	return nil
 }
