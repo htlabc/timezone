@@ -3,7 +3,6 @@ package channelpool
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -86,11 +85,14 @@ func (c *ChannelPool) RunSync(calls []*Callable) []interface{} {
 	results := make([]interface{}, 0)
 	for _, call := range calls {
 		wg.Add(1)
-		go func() {
-			result := call.fun(call.args)
-			results = append(results, result)
+		func(c *Callable) {
+			result := c.fun(c.args)
+			if c.result == nil {
+				c.result = &Result{}
+			}
+			c.result.data = result
 			wg.Done()
-		}()
+		}(call)
 	}
 	wg.Wait()
 	return results
@@ -99,10 +101,7 @@ func (c *ChannelPool) RunSync(calls []*Callable) []interface{} {
 //异步执行函数
 func (c *ChannelPool) RunASync(calls []*Callable) {
 	for _, call := range calls {
-		go func() {
-			fmt.Printf("recive a callable task %v", call.id)
-			c.CallableChan <- call
-		}()
+		c.CallableChan <- call
 	}
 }
 
@@ -115,8 +114,11 @@ func (c *Callable) execute() {
 		case error:
 			c.result.err = errors.New(res.(string))
 		default:
-			c.result.data = res
-			c.result.err = nil
+			if res != nil {
+				c.result.data = res
+				c.result.err = nil
+			}
+
 		}
 	}()
 	<-ctx.Done()
@@ -125,12 +127,20 @@ func (c *Callable) execute() {
 
 //获取协程池执行结果
 func (pool *ChannelPool) Get(c *Callable) *Result {
-	<-c.ctx.Done()
+	//<-c.ctx.Done()
+
+	if c.result == nil {
+		c.result = &Result{}
+		return c.result
+	}
 	return c.result
 }
 
 func (r *Result) GetData() interface{} {
-	return r.data
+	if r != nil {
+		return r.data
+	}
+	return nil
 }
 
 func (r *Result) GetError() error {

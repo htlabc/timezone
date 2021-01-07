@@ -1,6 +1,7 @@
 package rpcclient
 
 import (
+	"fmt"
 	"htl.com/request"
 	"log"
 	"net/rpc"
@@ -35,8 +36,12 @@ func NewRpcClient() *RpcClient {
 //}
 
 func (r *RpcClient) Send(req *request.Request) *request.Response {
-	service := "127.0.0.1:1234"
-	client, err := rpc.Dial("tcp", service)
+	//service := "127.0.0.1:1234"
+	client, err := rpc.Dial("tcp", req.URL)
+	if req.CMD == request.HEARTBEAT {
+		fmt.Printf("heartbeat rpcclient send request to %v \n", req.URL)
+	}
+	defer client.Close()
 	if err != nil {
 		log.Fatal("dialing:", err)
 	}
@@ -46,6 +51,5 @@ func (r *RpcClient) Send(req *request.Request) *request.Response {
 		log.Fatal("HandleClientRequest error :", err)
 	}
 	//fmt.Println(response)
-
 	return response
 }

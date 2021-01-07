@@ -1,3 +1,3 @@
 package consensus
 
-var DataPath string = "D:\\timezonedata\\"
+var DataPath string = "D://timezonedata//"

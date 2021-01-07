@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/rpc"
 	"os"
+	"strings"
 )
 
 type rpcServer interface {
@@ -23,8 +24,13 @@ func NewRpcServer() *RpcServer {
 //	GetService() *server.Server
 //}
 
+func init() {
+	ServerQueue = make(map[string]*server.Server, 0)
+}
+
+var ServerQueue map[string]*server.Server
+
 type RpcServer struct {
-	//Service
 }
 
 //func Start(r *RpcServer, address string, stopch chan struct{}) {
@@ -53,8 +59,9 @@ type RpcServer struct {
 func Start(r *RpcServer, address string, stopch chan struct{}) {
 
 	rpc.Register(r)
-
-	tcpAddr, err := net.ResolveTCPAddr("tcp", ":1234")
+	addr := strings.Split(address, ":")[1]
+	fmt.Println("regiest rpc server port: ", addr)
+	tcpAddr, err := net.ResolveTCPAddr("tcp", ":"+addr)
 	if err != nil {
 		fmt.Println("Fatal error:", err)
 		os.Exit(1)
@@ -80,7 +87,8 @@ func Stop(r *RpcServer) {
 }
 
 func (r *RpcServer) HandleClientRequest(request *req.Request, response *req.Response) error {
-	ser := server.GETINSTANCE()
+	var ser *server.Server = ServerQueue[request.URL]
+	fmt.Printf("server address %v recive request type %v \n", ser.GetSelfPeer().GetAddress(), request.CMD)
 	switch request.CMD {
 	case req.V_ELECTION:
 		ser.HandleElectionRequest(request, response)
