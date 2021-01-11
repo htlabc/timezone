@@ -44,7 +44,7 @@ func Main() {
 	go rpcserver.Start(server2, p3.GetAddress(), stopch)
 	go s3.Start(stopch)
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(60 * time.Second)
 	fmt.Println(s1.GetTimeZone())
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)

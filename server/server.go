@@ -59,6 +59,8 @@ type Server struct {
 	electionperiod       int
 	heartbeatperiod      int64
 	preHeartbeatTime     int64
+	detaltime            int64
+	retryPeriod          int
 }
 
 func NewServer() *Server {
@@ -218,7 +220,7 @@ func (s *Server) heartbeat(ticker *time.Ticker) {
 							default:
 								return request.Response{}
 							}
-							hbreq := &request.HeartBeatRequest{*s.serverid, s.term}
+							hbreq := &request.HeartBeatRequest{*s.serverid, s.term, consensus.MakeTimestamp(time.Now())}
 							jsdata, _ := json.Marshal(hbreq)
 							req := &request.Request{CMD: request.HEARTBEAT, OBJ: jsdata, URL: args.(Peer).address}
 							response := s.rpcclient.Send(req)
@@ -244,6 +246,9 @@ func (s *Server) heartbeat(ticker *time.Ticker) {
 func (s *Server) HandleHeartBeatRequest(req *request.Request, response *request.Response) {
 	hbreq := &request.HeartBeatRequest{}
 	json.Unmarshal(req.OBJ.([]byte), hbreq)
+	if s.detaltime == 0 {
+		s.detaltime = consensus.MakeTimestamp(time.Now()) - hbreq.Timestamp
+	}
 	fmt.Printf("server: %v status: %v  term: %v recive serverid  %v heartbeat term is %v \n", *s.serverid, s.status, s.term, hbreq.Serverid, hbreq.Term)
 	//如果leader发过来的term任期比自己大则接受它的心跳否则就返回
 	if s.term <= hbreq.Term {
@@ -384,4 +389,38 @@ func (s *Server) Read(filename string) ([]byte, error) {
 		return nil, nil
 	}
 	return data, nil
+}
+
+func (s *Server) RequestAddPeer(p *Peer) bool {
+	var callables []*channelpool.Callable = make([]*channelpool.Callable, 0)
+	retrynum := 0
+ADDPEER_HERE:
+	if retrynum == s.retryPeriod {
+		return false
+	}
+	for _, peer := range s.GetWithoutSelfPeer() {
+		callables = append(callables, channelpool.NewCallable(func(args interface{}) interface{} {
+			req := request.Request{CMD: request.A_PEER, OBJ: p, URL: peer.address}
+			result := s.rpcclient.Send(&req)
+			return result
+		}, nil, context.Background(), 5*time.Second))
+	}
+
+	channelpool.GetInstace().RunSync(callables)
+
+	success := 0
+	for _, cal := range callables {
+		result := channelpool.GetInstace().Get(cal)
+		if result.GetData().(string) == request.OK {
+			success += 1
+		}
+	}
+	if success == len(s.GetWithoutSelfPeer()) {
+		return true
+	} else {
+		retrynum++
+		goto ADDPEER_HERE
+	}
+
+	return false
 }
